@@ -9,38 +9,32 @@
     simultaneamente e restituire risposte appropriate ai client.
 '''
 #Imports
-import os
 import sys, signal
 import http.server
 import socketserver
 
 #Inizializzo un indirizzo e porta standard su cui sarà possibile interfacciarsi col server.
-STANDARD_ADDRESS = 'localhost'
+STANDARD_ADDRESS = "localhost"
 STANDARD_PORT = 8080
 
-#Verifico gli argomenti passati da linea di comando, se non vengono passati correttamente indirizzo e porta
-#vengono inizializzati con valori standard
+#Verifico gli argomenti passati da linea di comando, se non vengono passati correttamente la porta è impostata ad un valore standrd
 if(len(sys.argv) == 1):
-    ADDRESS = STANDARD_ADDRESS
     PORT = STANDARD_PORT
 else:
-    ADDRESS = sys.argv[1]
-    PORT = sys.argv[2]
+    PORT = int(sys.argv[1])
 
 #Descrivo il comportamento da eseguire dal server in caso di richiesta get.
 class HTTPHandler(http.server.SimpleHTTPRequestHandler):
-     def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory="src/html", **kwargs)
      def do_GET(self):
         path = self.path
         client_ip, client_port = self.client_address
         command = self.command
-        print(f"Request (Type: {command} for path: {self.path}) received from... {client_ip}:{client_port}")
+        print(f"Request (Type: {command} for path: {self.path}) 
+              received from... {client_ip}:{client_port}")
         return super().do_GET()
 
 #Realizzo il server HTTP in grado di gestire più richieste
-server = socketserver.ThreadingTCPServer((ADDRESS,PORT),HTTPHandler)
-print("Server setUp on Address: " + str(ADDRESS) + " Port: " + str(PORT))
+server = socketserver.ThreadingTCPServer((STANDARD_ADDRESS,PORT),HTTPHandler)
 
 #Assicurro la corretta chiusura di tutti i threads alla chiusura dell'applicazione con Ctrl+C
 server.daemon_threads = True  
@@ -59,10 +53,11 @@ def signal_handler(signal, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-print("Server waiting for connections....")
 #Loop infinito di gestione delle richieste, interrompibile solo dal segnale da tastiera.
 try:
     while True:
+        print(f"Server set up on Address: http://{STANDARD_ADDRESS}:{PORT}")
+        print("Server waiting for requests....")
         server.serve_forever()
 except KeyboardInterrupt:
     pass
