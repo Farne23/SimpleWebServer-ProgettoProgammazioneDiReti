@@ -29,6 +29,8 @@ else:
 
 #Descrivo il comportamento da eseguire dal server in caso di richiesta get.
 class HTTPHandler(http.server.SimpleHTTPRequestHandler):
+     def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory="src/html", **kwargs)
      def do_GET(self):
         path = self.path
         client_ip, client_port = self.client_address
