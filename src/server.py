@@ -9,9 +9,15 @@
     simultaneamente e restituire risposte appropriate ai client.
 '''
 #Imports
+import os
 import sys, signal
 import http.server
 import socketserver
+
+def check_file_exists(path):
+        relative_path = path.lstrip('/')
+        full_path = os.path.join(os.getcwd(), relative_path)
+        return os.path.exists(full_path)
 
 #Inizializzo un indirizzo e porta standard su cui sarà possibile interfacciarsi col server.
 STANDARD_ADDRESS = 'localhost'
@@ -26,14 +32,20 @@ else:
     ADDRESS = sys.argv[1]
     PORT = sys.argv[2]
 
-class SimpleHTTPHandler(http.server.SimpleHTTPRequestHandler):
+#Descrivo il comportamento da eseguire dal server in caso di richiesta get.
+class HTTPHandler(http.server.SimpleHTTPRequestHandler):
      def do_GET(self):
+        path = self.path
         client_ip, client_port = self.client_address
-        print(f"Connessione ricevuta da {client_ip}:{client_port}")
-        super()
+        command = self.command
+        if not(check_file_exists(self.path)):
+            print(f"Request (Type: {command} for NON-EXISTENT path: {self.path}) received from... {client_ip}:{client_port}")
+        else:
+            print(f"Request (Type: {command} for path: {self.path}) received from... {client_ip}:{client_port}")
+        return super().do_GET()
 
 #Realizzo il server HTTP in grado di gestire più richieste
-server = socketserver.ThreadingTCPServer((ADDRESS,PORT),http.server.SimpleHTTPRequestHandler)
+server = socketserver.ThreadingTCPServer((ADDRESS,PORT),HTTPHandler)
 print("Server setUp on Address: " + str(ADDRESS) + " Port: " + str(PORT))
 
 #Assicurro la corretta chiusura di tutti i threads alla chiusura dell'applicazione con Ctrl+C
