@@ -29,8 +29,7 @@ class HTTPHandler(http.server.SimpleHTTPRequestHandler):
         path = self.path
         client_ip, client_port = self.client_address
         command = self.command
-        print(f"Request (Type: {command} for path: {self.path}) 
-              received from... {client_ip}:{client_port}")
+        print(f"Request (Type: {command} for path: {self.path})  received from... {client_ip}:{client_port}")
         return super().do_GET()
 
 #Realizzo il server HTTP in grado di gestire più richieste
