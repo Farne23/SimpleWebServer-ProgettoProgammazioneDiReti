@@ -42,15 +42,24 @@ if(len(sys.argv) == 1):
 else:
     PORT = int(sys.argv[1])
 
-#Descrivo il comportamento da eseguire dal server in caso di richiesta get, gestendo anche richieste di pagine inesistenti.
 class HTTPHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         path = self.path
         client_ip, client_port = self.client_address
-        command = self.command
         print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] GET {self.path} from {client_ip}:{client_port}")
+
+        # Gestione speciale per documentazione.pdf
+        if path == "/documentazione.pdf":
+            file_path = "." + path  # assuming current directory root
+            if not os.path.exists(file_path):
+                self.send_response(404)
+                self.send_header("Content-type", "text/html")
+                self.end_headers()
+                self.wfile.write(b"<h1>404 Not Found</h1><p>Il file documentazione.pdf non esiste.</p>")
+                return
+
         return super().do_GET()
-     
+
     def send_error(self, code, message=None, explain=None):
         if code == 404:
             self.send_response(404)
@@ -60,7 +69,7 @@ class HTTPHandler(http.server.SimpleHTTPRequestHandler):
                 with open("404.html", "rb") as f:
                     self.wfile.write(f.read())
             except FileNotFoundError:
-                self.wfile.write(b"<h1>404 Not Found</h1><p>La pagina richiesta non esiste.</p>")# Se 404.html manca
+                self.wfile.write(b"<h1>404 Not Found</h1><p>La pagina richiesta non esiste.</p>")
         else:
             super().send_error(code, message, explain)
 
