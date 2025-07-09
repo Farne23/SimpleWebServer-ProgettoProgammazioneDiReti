@@ -1,17 +1,36 @@
 '''
     Matricola: 0001080677
     Email: michele.farneti@studio.unibo.it
-    Anno: 2024
+    Anno: 2025
 
-    Traccia 2:
-    Creare un web server semplice in Python che possa servire file statici (come HTML, CSS, immagini)
-    e gestire richieste HTTP GET di base. Il server deve essere in grado di gestire più richieste
-    simultaneamente e restituire risposte appropriate ai client.
+    Traccia 1 – Web Server + Sito Web Statico (livello base/intermedio)
+    Titolo: "Realizzazione di un Web Server minimale in Python e pubblicazione di un sito statico"
+
+    Obiettivo:
+    Progettare un semplice server HTTP in Python (usando socket) e servire un sito web statico con HTML/CSS.
+    Requisiti minimi:
+
+    Il server deve rispondere su localhost:8080.
+    Deve servire almeno 3 pagine HTML statiche.
+    Gestione di richieste GET e risposta con codice 200.
+    Implementare risposta 404 per file inesistenti.
+
+    Estensioni opzionali:
+    Gestione dei MIME types (.html, .css, .jpg, ecc.).
+    Logging delle richieste.
+    Aggiunta di animazioni o layout responsive.
+
 '''
 #Imports
 import sys, signal
 import http.server
 import socketserver
+import os
+from datetime import datetime
+
+
+#Setto la radice dei file serviti
+os.chdir('www')
 
 #Inizializzo un indirizzo e porta standard su cui sarà possibile interfacciarsi col server.
 STANDARD_ADDRESS = "localhost"
@@ -23,14 +42,27 @@ if(len(sys.argv) == 1):
 else:
     PORT = int(sys.argv[1])
 
-#Descrivo il comportamento da eseguire dal server in caso di richiesta get.
+#Descrivo il comportamento da eseguire dal server in caso di richiesta get, gestendo anche richieste di pagine inesistenti.
 class HTTPHandler(http.server.SimpleHTTPRequestHandler):
-     def do_GET(self):
+    def do_GET(self):
         path = self.path
         client_ip, client_port = self.client_address
         command = self.command
-        print(f"Request (Type: {command} for path: {self.path})  received from... {client_ip}:{client_port}")
+        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] GET {self.path} from {client_ip}:{client_port}")
         return super().do_GET()
+     
+    def send_error(self, code, message=None, explain=None):
+        if code == 404:
+            self.send_response(404)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            try:
+                with open("404.html", "rb") as f:
+                    self.wfile.write(f.read())
+            except FileNotFoundError:
+                self.wfile.write(b"<h1>404 Not Found</h1><p>La pagina richiesta non esiste.</p>")# Se 404.html manca
+        else:
+            super().send_error(code, message, explain)
 
 #Realizzo il server HTTP in grado di gestire più richieste
 server = socketserver.ThreadingTCPServer((STANDARD_ADDRESS,PORT),HTTPHandler)
