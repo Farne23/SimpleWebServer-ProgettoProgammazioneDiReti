@@ -46,7 +46,7 @@ class HTTPHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         path = self.path
         client_ip, client_port = self.client_address
-        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] GET {self.path} from {client_ip}:{client_port}")
+        print(f"\r\n==> [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Richiesta ( Tipo = GET per la risorsa : {self.path} ) ricevuta da {client_ip}:{client_port}")
 
         # Gestione speciale per documentazione.pdf
         if path == "/documentazione.pdf":
